@@ -1,0 +1,65 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract SchoolGradingSystem {
+    struct Student {
+        uint id;
+        string uid;
+        string name;
+        uint grade;
+    }
+
+    mapping(uint => Student) private students;
+    mapping(string => bool) private uids;
+    mapping(uint => bool) private ids;
+
+    // Add a new student
+    function addStudent(uint studentId, string memory uid, string memory name) public {
+        require(!uids[uid], "UID already exists"); // Demonstrates require
+        require(!ids[studentId], "Student ID already exists"); // Demonstrates require
+        students[studentId] = Student(studentId, uid, name, 0);
+        uids[uid] = true;
+        ids[studentId] = true;
+    }
+
+    // Set the grade for a student
+    function setGrade(uint studentId, uint grade) public {
+        require(grade <= 100, "Grade must be between 0 and 100"); // Demonstrates require
+        require(ids[studentId], "Student does not exist"); // Demonstrates require
+        students[studentId].grade = grade;
+    }
+
+    // Retrieve a student's grade
+    function getGrade(uint studentId) public view returns (uint) {
+        require(ids[studentId], "Student does not exist"); // Demonstrates require
+        return students[studentId].grade;
+    }
+
+    // Use assert to ensure data integrity (e.g., student's grade should be within 0 to 100)
+    function checkStudentGrade(uint studentId) public view {
+        require(ids[studentId], "Student does not exist"); // Demonstrates require
+        uint grade = students[studentId].grade;
+        assert(grade <= 100 && grade >= 0); // Demonstrates assert
+    }
+
+    // Use revert to handle specific error conditions (e.g., removing a student who doesn't exist)
+    function removeStudent(uint studentId) public {
+        if (!ids[studentId]) {
+            revert("Student does not exist"); // Demonstrates revert
+        }
+        delete uids[students[studentId].uid];
+        delete ids[studentId];
+        delete students[studentId];
+    }
+
+    // Extra function to demonstrate more complex revert usage
+    function updateStudentName(uint studentId, string memory newName) public {
+        if (!ids[studentId]) {
+            revert("Student does not exist"); // Demonstrates revert
+        }
+        if (bytes(newName).length == 0) {
+            revert("New name cannot be empty"); // Demonstrates revert
+        }
+        students[studentId].name = newName;
+    }
+}
